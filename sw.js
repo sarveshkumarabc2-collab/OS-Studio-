@@ -1,11 +1,10 @@
-// Otaku Sarvesh Studio — Service Worker v1
+// Otaku Sarvesh Studio — Service Worker v2
 const CACHE = 'oss-v41';
 const ASSETS = [
   './index.html',
   './manifest.json'
 ];
 
-// Install: cache the app shell
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(ASSETS))
@@ -13,7 +12,6 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate: clean old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -23,15 +21,21 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: serve from cache, fallback to network
 self.addEventListener('fetch', e => {
-  // API calls (OpenRouter, Inworld) — always network
-  if (e.request.url.includes('openrouter') || 
+  if (e.request.url.includes('openrouter') ||
       e.request.url.includes('inworld') ||
       e.request.url.includes('api.')) {
     return;
   }
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(response => {
+        return caches.open(CACHE).then(c => {
+          c.put(e.request, response.clone());
+          return response;
+        });
+      });
+    })
   );
 });
