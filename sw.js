@@ -1,7 +1,7 @@
 // Otaku Sarvesh Studio — Service Worker v1
-const CACHE = 'oss-v40';
+const CACHE = 'oss-v41';
 const ASSETS = [
-  './otaku_sarvesh_Hinglish_v40.html',
+  './index.html',
   './manifest.json'
 ];
 
